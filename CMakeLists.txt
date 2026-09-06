@@ -9,9 +9,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
 # Setup optional build flags
-option(${TARGET_NAME}_ENABLE_EXTRA_WARNINGS "Enable more strict warnings" ON)
-option(${TARGET_NAME}_TREAT_WARNINGS_AS_ERRORS "Treat warnings as a compiler error" OFF)
-option(${TARGET_NAME}_BUILD_TESTS "Build tests" OFF)
+option(CudaRaytracer_ENABLE_EXTRA_WARNINGS "Enable more strict warnings" ON)
+option(CudaRaytracer_TREAT_WARNINGS_AS_ERRORS "Treat warnings as a compiler error" OFF)
+option(CudaRaytracer_BUILD_TESTS "Build tests" OFF)
 
 
 # Gather headers
@@ -21,12 +21,78 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGET_NAME}/*.h
 )
 
-# Setup target
+
+#
+# Dependencies 
+#
+
+include (FetchContent)
+
+# CPM
+set(CPM_DOWNLOAD_VERSION 0.43.1)
+set(CPM_DOWNLOAD_LOCATION
+    "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake"
+)
+
+if (NOT EXISTS "${CPM_DOWNLOAD_LOCATION}")
+    file(
+        DOWNLOAD
+        "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake"
+        "${CPM_DOWNLOAD_LOCATION}"
+        TLS_VERIFY ON
+    )
+endif()
+
+include("${CPM_DOWNLOAD_LOCATION}")
+
+
+# SDL3
+CPMAddPackage(
+    NAME SDL3
+    GITHUB_REPOSITORY libsdl-org/SDL
+    GIT_TAG release-3.4.16
+    OPTIONS
+        "SDL_SHARED OFF"
+        "SDL_STATIC ON"
+        "SDL_TEST_LIBRARY OFF"
+        "SDL_TESTS OFF"
+        "SDL_EXAMPLES OFF"
+)
+
+
+# JSON
+CPMAddPackage(
+    NAME nlohmann_json
+    GITHUB_REPOSITORY nlohmann/json
+    GIT_TAG v3.12.0
+)
+
+
+# stb_image
+CPMAddPackage(
+    NAME stb
+    GITHUB_REPOSITORY nothings/stb
+    GIT_TAG master
+)
+
+
+#
+# Setup Target
+#
+
 add_library(${TARGET_NAME} ${HEADER_FILES})
+
+target_link_libraries(${TARGET_NAME}
+	PUBLIC
+		SDL3::SDL3
+		nlohmann_json::nlohmann_json
+)
 
 target_include_directories(${TARGET_NAME} 
 	INTERFACE ${PROJECT_SOURCE_DIR}/include
-	PRIVATE ${PROJECT_SOURCE_DIR}/include/${TARGET_NAME}
+	PRIVATE
+		${PROJECT_SOURCE_DIR}/include/${TARGET_NAME}
+		${stb_SOURCE_DIR}
 )
 
 
@@ -48,18 +114,21 @@ source_group(
 )
 
 
-# Apply build options
+#
+# Build Options
+#
+
 if (MSVC)
-	if (${CPPUTIL_ENABLE_EXTRA_WARNINGS})
+	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TARGET_NAME} PRIVATE /W4 /permissive-)
 	endif()
 	
-	if (${CPP_UTIL_TREAT_WARNINGS_AS_ERRORS})
+	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TARGET_NAME} PRIVATE /WX)
 	endif()
 	
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	if (${CPPUTIL_ENABLE_EXTRA_WARNINGS})
+	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TARGET_NAME} PRIVATE
 			-Wall
 			-Wextra
@@ -70,13 +139,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 		)
 	endif()
 	
-	if (${CPP_UTIL_TREAT_WARNINGS_AS_ERRORS})
+	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TARGET_NAME} PRIVATE -Werror)
 	endif()
 
 endif()
 
 
-if (${CPPUTIL_BUILD_TESTS})
+if (${CudaRaytracer_BUILD_TESTS})
 	add_subdirectory(test)
 endif()

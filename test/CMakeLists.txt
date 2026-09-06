@@ -38,16 +38,16 @@ source_group(
 
 # Apply build options
 if (MSVC)
-	if (${CPPUTIL_ENABLE_EXTRA_WARNINGS})
+	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TEST_TARGET_NAME} PRIVATE /W4 /permissive-)
 	endif()
 	
-	if (${CPP_UTIL_TREAT_WARNINGS_AS_ERRORS})
+	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TEST_TARGET_NAME} PRIVATE /WX)
 	endif()
 	
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	if (${CPPUTIL_ENABLE_EXTRA_WARNINGS})
+	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TEST_TARGET_NAME} PRIVATE
 			-Wall
 			-Wextra
@@ -58,7 +58,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 		)
 	endif()
 	
-	if (${CPP_UTIL_TREAT_WARNINGS_AS_ERRORS})
+	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TEST_TARGET_NAME} PRIVATE -Werror)
 	endif()
 
