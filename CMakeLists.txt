@@ -1,17 +1,30 @@
 cmake_minimum_required(VERSION 3.27)
-project(CudaRaytracer)
-set(TARGET_NAME CudaRaytracer)
+project(Raytracer
+	LANGUAGES CXX CUDA
+)
+set(TARGET_NAME Raytracer)
+set(CUDA_TARGET_NAME RaytracerCuda)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CUDA_STANDARD 20)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
-# Setup optional build flags
-option(CudaRaytracer_ENABLE_EXTRA_WARNINGS "Enable more strict warnings" ON)
-option(CudaRaytracer_TREAT_WARNINGS_AS_ERRORS "Treat warnings as a compiler error" OFF)
-option(CudaRaytracer_BUILD_TESTS "Build tests" OFF)
+# Setup configurable build options
+option(Raytracer_ENABLE_EXTRA_WARNINGS "Enable more strict warnings" ON)
+option(Raytracer_TREAT_WARNINGS_AS_ERRORS "Treat warnings as a compiler error" OFF)
+option(Raytracer_BUILD_TESTS "Build tests" OFF)
+set(Raytracer_CUDA_ARCHITECTURES "89"
+	CACHE STRING "CUDA architecture type"
+)
+
+if (MSVC)
+	option(Raytracer_ENABLE_MULTI_PROCESS_COMPILE "Enable multi-process compilation (/MP)" ON)
+	option(Raytracer_ENABLE_JUST_MY_CODE "Enable just my code debug flag (/JMC)" ON)
+endif()
 
 
 # Gather headers
@@ -82,22 +95,30 @@ CPMAddPackage(
 
 add_library(${TARGET_NAME} ${HEADER_FILES})
 
-target_link_libraries(${TARGET_NAME}
-	PUBLIC
-		SDL3::SDL3
-		nlohmann_json::nlohmann_json
-)
-
 target_include_directories(${TARGET_NAME} 
-	INTERFACE ${PROJECT_SOURCE_DIR}/include
+	INTERFACE
+		${PROJECT_SOURCE_DIR}/include
+		
 	PRIVATE
 		${PROJECT_SOURCE_DIR}/include/${TARGET_NAME}
+		${PROJECT_SOURCE_DIR}/cuda/include
 		${stb_SOURCE_DIR}
 )
 
 
 # Add subdirectories
 add_subdirectory(src)
+add_subdirectory(cuda)
+
+# Link libraries
+target_link_libraries(${TARGET_NAME}
+	PRIVATE
+		${CUDA_TARGET_NAME}
+
+	PUBLIC
+		SDL3::SDL3
+		nlohmann_json::nlohmann_json
+)
 
 
 # Setup folder hierarchy
@@ -114,21 +135,31 @@ source_group(
 )
 
 
+
+
 #
 # Build Options
 #
 
 if (MSVC)
-	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
+	if (${Raytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TARGET_NAME} PRIVATE /W4 /permissive-)
 	endif()
 	
-	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
+	if (${Raytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TARGET_NAME} PRIVATE /WX)
 	endif()
 	
+	if (${Raytracer_ENABLE_MULTI_PROCESS_COMPILE})
+		target_compile_options(${TARGET_NAME} PRIVATE /MP)
+	endif()
+	
+	if (${Raytracer_ENABLE_JUST_MY_CODE})
+		target_compile_options(${TARGET_NAME} PRIVATE $<$<CONFIG:Debug>:/JMC>)
+	endif()
+	
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	if (${CudaRaytracer_ENABLE_EXTRA_WARNINGS})
+	if (${Raytracer_ENABLE_EXTRA_WARNINGS})
 		target_compile_options(${TARGET_NAME} PRIVATE
 			-Wall
 			-Wextra
@@ -139,13 +170,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 		)
 	endif()
 	
-	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
+	if (${Raytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TARGET_NAME} PRIVATE -Werror)
 	endif()
 
 endif()
 
 
-if (${CudaRaytracer_BUILD_TESTS})
+if (${Raytracer_BUILD_TESTS})
 	add_subdirectory(test)
 endif()

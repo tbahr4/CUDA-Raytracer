@@ -2,7 +2,7 @@ set(TEST_TARGET_NAME CudaRaytracerTests)
 
 
 # Gather headers
-file(GLOB_RECURSE HEADER_FILES
+file(GLOB_RECURSE TEST_HEADER_FILES
 	CONFIGURE_DEPENDS
 	${CMAKE_CURRENT_SOURCE_DIR}/common/include/${TEST_TARGET_NAME}/*.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/common/include/${TEST_TARGET_NAME}/*.h
@@ -10,7 +10,7 @@ file(GLOB_RECURSE HEADER_FILES
 
 
 # Setup target
-add_executable(${TEST_TARGET_NAME} ${HEADER_FILES})
+add_executable(${TEST_TARGET_NAME} ${TEST_HEADER_FILES})
 target_link_libraries(${TEST_TARGET_NAME} ${TARGET_NAME})
 
 target_include_directories(${TEST_TARGET_NAME} 
@@ -26,13 +26,13 @@ add_subdirectory(core)
 source_group(
 	TREE ${CMAKE_CURRENT_SOURCE_DIR}/common/include/${TEST_TARGET_NAME}
 	PREFIX "common/include/${TEST_TARGET_NAME}"
-	FILES ${HEADER_FILES}
+	FILES ${TEST_HEADER_FILES}
 )
 
 source_group(
 	TREE ${CMAKE_CURRENT_SOURCE_DIR}/common/src
 	PREFIX "common/src"
-	FILES ${SOURCE_FILES}
+	FILES ${TEST_SOURCE_FILES}
 )
 
 
@@ -44,6 +44,10 @@ if (MSVC)
 	
 	if (${CudaRaytracer_TREAT_WARNINGS_AS_ERRORS})
 		target_compile_options(${TEST_TARGET_NAME} PRIVATE /WX)
+	endif()
+	
+	if (${Raytracer_ENABLE_MULTI_PROCESS_COMPILE})
+		target_compile_options(${TEST_TARGET_NAME} PRIVATE /MP)
 	endif()
 	
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
