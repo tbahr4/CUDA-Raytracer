@@ -93,7 +93,7 @@ CPMAddPackage(
 # Setup Target
 #
 
-add_library(${TARGET_NAME} ${HEADER_FILES})
+add_executable(${TARGET_NAME} ${HEADER_FILES})
 
 target_include_directories(${TARGET_NAME} 
 	INTERFACE
@@ -133,8 +133,6 @@ source_group(
 	PREFIX "src"
 	FILES ${SOURCE_FILES}
 )
-
-
 
 
 #

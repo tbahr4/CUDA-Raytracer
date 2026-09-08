@@ -1,6 +1,3 @@
-# Add subdirectories
-add_subdirectory(Util)
-
 # Gather files at this level
 file (GLOB LOCAL_SOURCE_FILES
 	CONFIGURE_DEPENDS
