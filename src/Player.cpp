@@ -1,21 +1,15 @@
 //!=============================================================================
 //! 
-//! @file     InputMgr.cpp
+//! @file     Camera.cpp
 //! 
 //!=============================================================================
 
-#include "InputMgr.h"
+#include "Camera.h"
 
 
 
 namespace Raytracer {
 
-	//! @fn     HandleEvent
-	//! @brief  Processes the provided SDL event
-	//! 
-	void InputMgr::HandleEvent(const SDL_Event& event) {
-		return; // TODO
-	}
 
 
 } // namespace Raytracer

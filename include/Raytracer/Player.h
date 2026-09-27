@@ -1,7 +1,7 @@
 //!=============================================================================
 //! 
-//! @file     Frame.h
-//! @brief    Modular frame buffer for pixel rendering
+//! @file     Player.h
+//! @brief    Represents the player entity
 //! 
 //! @details  
 //! 
@@ -10,20 +10,19 @@
 //!=============================================================================
 #pragma once
 
-#include <cstdint>
+#include "Camera.h"
 
 
 
 namespace Raytracer {
 
-	//! @class  Frame
-	//! @brief  Modular frame buffer for pixel rendering
+	//! @class  Player
+	//! @brief  Represents the player entity
 	//! 
-	class Frame {
+	class Player : public Camera {
 	private:
 
 	public:
-		const uint32_t* GetBuffer() const;
 
 	};
 
